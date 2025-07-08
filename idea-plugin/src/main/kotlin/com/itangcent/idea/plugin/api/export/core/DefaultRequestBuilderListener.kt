@@ -6,6 +6,8 @@ import com.itangcent.common.constant.Attrs
 import com.itangcent.common.kit.KVUtils
 import com.itangcent.common.model.*
 import com.itangcent.common.utils.appendln
+import com.itangcent.idea.plugin.settings.helper.IntelligentSettingsHelper
+import com.itangcent.intellij.config.ConfigReader
 import com.itangcent.intellij.extend.toPrettyString
 import com.itangcent.intellij.logger.Logger
 import com.itangcent.intellij.util.forEachValid
@@ -17,6 +19,13 @@ open class DefaultRequestBuilderListener : RequestBuilderListener {
     @Inject
     private lateinit var logger: Logger
 
+    @Inject
+    private lateinit var configReader: ConfigReader
+
+    companion object {
+        const val KEY_API_PREFIX = "api.prefix"
+    }
+
     override fun setName(exportContext: ExportContext, request: Request, name: String) {
         request.name = name
     }
@@ -26,7 +35,8 @@ open class DefaultRequestBuilderListener : RequestBuilderListener {
     }
 
     override fun setPath(exportContext: ExportContext, request: Request, path: URL) {
-        request.path = path
+        val apiPrefix = configReader.first("api.prefix") ?: ""
+        request.path = URL.of(apiPrefix).concat(path)
     }
 
     override fun setModelAsBody(exportContext: ExportContext, request: Request, model: Any) {
